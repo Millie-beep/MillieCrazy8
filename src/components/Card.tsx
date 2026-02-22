@@ -13,8 +13,6 @@ interface CardProps {
   index?: number;
 }
 
-const ZODIAC_ANIMALS = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'];
-
 export const Card: React.FC<CardProps> = ({
   card,
   isFaceUp = true,
@@ -25,10 +23,8 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   if (isFaceUp && !card) return null;
 
-  // Use a consistent zodiac animal based on the card's ID for the back
-  const zodiacIndex = card?.id ? (card.id.length % 12) : (index % 12);
-  const animal = ZODIAC_ANIMALS[zodiacIndex];
-  const backImageUrl = `https://picsum.photos/seed/${animal}/200/300`;
+  // 使用与用户提供图片风格一致的星空/星云图片
+  const backImageUrl = `https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=400&q=80`;
 
   return (
     <motion.div
@@ -39,8 +35,8 @@ export const Card: React.FC<CardProps> = ({
       transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 20 }}
       onClick={isPlayable ? onClick : undefined}
       className={cn(
-        'relative w-24 h-36 sm:w-32 sm:h-48 rounded-xl shadow-xl transition-all duration-300 cursor-default select-none overflow-hidden',
-        isFaceUp ? 'bg-white' : 'bg-red-900 border-4 border-yellow-500/50',
+        'relative w-24 h-36 sm:w-32 sm:h-48 rounded-xl shadow-2xl transition-all duration-300 cursor-default select-none overflow-hidden',
+        isFaceUp ? 'bg-white' : 'bg-indigo-950 border-2 border-white/20',
         isPlayable && 'cursor-pointer ring-4 ring-emerald-400 ring-offset-2 ring-offset-zinc-950',
         className
       )}
@@ -70,28 +66,25 @@ export const Card: React.FC<CardProps> = ({
           </div>
         </div>
       ) : (
-        <div className="w-full h-full relative">
+        <div className="w-full h-full relative bg-indigo-950">
           <img 
             src={backImageUrl} 
             alt="Card Back" 
-            className="w-full h-full object-cover opacity-60 mix-blend-overlay"
+            className="w-full h-full object-cover opacity-90"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-yellow-500/30 flex items-center justify-center bg-red-950/50 backdrop-blur-sm">
-              <div className="text-2xl sm:text-3xl text-yellow-500 font-bold font-display">
-                福
-              </div>
-            </div>
-            <div className="mt-2 text-[8px] sm:text-[10px] text-yellow-500/60 font-bold uppercase tracking-[0.2em]">
-              Zodiac Edition
+          {/* 柔和的渐变叠加，增加层次感 */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20" />
+          
+          {/* 装饰性边框 */}
+          <div className="absolute inset-2 border border-white/10 rounded-lg" />
+          
+          {/* 中心装饰符号 */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white/10 animate-pulse" />
             </div>
           </div>
-          {/* Decorative corners */}
-          <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-yellow-500/40" />
-          <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-yellow-500/40" />
-          <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-yellow-500/40" />
-          <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-yellow-500/40" />
         </div>
       )}
     </motion.div>
