@@ -13,6 +13,8 @@ interface CardProps {
   index?: number;
 }
 
+const ZODIAC_ANIMALS = ['rat', 'ox', 'tiger', 'rabbit', 'dragon', 'snake', 'horse', 'goat', 'monkey', 'rooster', 'dog', 'pig'];
+
 export const Card: React.FC<CardProps> = ({
   card,
   isFaceUp = true,
@@ -23,6 +25,11 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   if (isFaceUp && !card) return null;
 
+  // Use a consistent zodiac animal based on the card's ID for the back
+  const zodiacIndex = card?.id ? (card.id.length % 12) : (index % 12);
+  const animal = ZODIAC_ANIMALS[zodiacIndex];
+  const backImageUrl = `https://picsum.photos/seed/${animal}/200/300`;
+
   return (
     <motion.div
       layout
@@ -32,10 +39,9 @@ export const Card: React.FC<CardProps> = ({
       transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 20 }}
       onClick={isPlayable ? onClick : undefined}
       className={cn(
-        'relative w-24 h-36 sm:w-32 sm:h-48 rounded-xl shadow-xl transition-all duration-300 cursor-default select-none',
-        isFaceUp ? 'bg-white' : 'bg-indigo-600 border-4 border-white/20',
+        'relative w-24 h-36 sm:w-32 sm:h-48 rounded-xl shadow-xl transition-all duration-300 cursor-default select-none overflow-hidden',
+        isFaceUp ? 'bg-white' : 'bg-red-900 border-4 border-yellow-500/50',
         isPlayable && 'cursor-pointer ring-4 ring-emerald-400 ring-offset-2 ring-offset-zinc-950',
-        !isFaceUp && 'bg-[repeating-linear-gradient(45deg,#4f46e5,#4f46e5_10px,#4338ca_10px,#4338ca_20px)]',
         className
       )}
     >
@@ -64,10 +70,28 @@ export const Card: React.FC<CardProps> = ({
           </div>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-white/30 flex items-center justify-center">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10" />
+        <div className="w-full h-full relative">
+          <img 
+            src={backImageUrl} 
+            alt="Card Back" 
+            className="w-full h-full object-cover opacity-60 mix-blend-overlay"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-yellow-500/30 flex items-center justify-center bg-red-950/50 backdrop-blur-sm">
+              <div className="text-2xl sm:text-3xl text-yellow-500 font-bold font-display">
+                福
+              </div>
+            </div>
+            <div className="mt-2 text-[8px] sm:text-[10px] text-yellow-500/60 font-bold uppercase tracking-[0.2em]">
+              Zodiac Edition
+            </div>
           </div>
+          {/* Decorative corners */}
+          <div className="absolute top-1 left-1 w-2 h-2 border-t border-l border-yellow-500/40" />
+          <div className="absolute top-1 right-1 w-2 h-2 border-t border-r border-yellow-500/40" />
+          <div className="absolute bottom-1 left-1 w-2 h-2 border-b border-l border-yellow-500/40" />
+          <div className="absolute bottom-1 right-1 w-2 h-2 border-b border-r border-yellow-500/40" />
         </div>
       )}
     </motion.div>

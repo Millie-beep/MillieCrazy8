@@ -7,7 +7,7 @@ export interface CardData {
   rank: Rank;
 }
 
-export type GameStatus = 'dealing' | 'playing' | 'picking_suit' | 'game_over';
+export type GameStatus = 'lobby' | 'dealing' | 'playing' | 'picking_suit' | 'game_over';
 
 export interface GameState {
   deck: CardData[];

@@ -18,7 +18,7 @@ export const SuitPicker: React.FC<SuitPickerProps> = ({ onSelect }) => {
     >
       <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl shadow-2xl max-w-md w-full">
         <h2 className="text-2xl font-display font-bold text-center mb-6 text-white">
-          Pick a Suit
+          选择花色
         </h2>
         <div className="grid grid-cols-2 gap-4">
           {SUITS.map((suit) => (

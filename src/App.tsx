@@ -22,11 +22,11 @@ export default function App() {
     discardPile: [],
     currentSuit: 'hearts',
     turn: 'player',
-    status: 'dealing',
+    status: 'lobby',
     winner: null,
   });
 
-  const [message, setMessage] = useState<string>('Welcome to Crazy Eights!');
+  const [message, setMessage] = useState<string>('欢迎来到疯狂 8 点！');
 
   const initGame = useCallback(() => {
     const fullDeck = shuffle(createDeck());
@@ -44,12 +44,10 @@ export default function App() {
       status: 'playing',
       winner: null,
     });
-    setMessage("Your turn! Match the suit or rank.");
+    setMessage("轮到你了！请匹配花色或点数。");
   }, []);
 
-  useEffect(() => {
-    initGame();
-  }, [initGame]);
+  // Removed auto-init on mount to show lobby first
 
   const checkPlayable = (card: CardData) => {
     if (gameState.status !== 'playing' || gameState.turn !== 'player') return false;
@@ -81,14 +79,14 @@ export default function App() {
     }));
 
     if (newHand.length === 0) {
-      setMessage(isPlayer ? "You Win! 🎉" : "AI Wins! 🤖");
+      setMessage(isPlayer ? "你赢了！🎉" : "AI 赢了！🤖");
       setGameState(prev => ({ ...prev, status: 'game_over' }));
       return;
     }
 
     if (card.rank === '8') {
       if (isPlayer) {
-        setMessage("Crazy 8! Pick a new suit.");
+        setMessage("疯狂 8 点！请选择一个新花色。");
       } else {
         // AI picks a suit (most frequent in its hand)
         const suits = gameState.aiHand.map(c => c.suit);
@@ -103,17 +101,17 @@ export default function App() {
             turn: 'player',
             status: 'playing'
           }));
-          setMessage(`AI picked ${mostFrequentSuit}! Your turn.`);
+          setMessage(`AI 选择了 ${mostFrequentSuit}！轮到你了。`);
         }, 1000);
       }
     } else {
-      setMessage(isPlayer ? "AI is thinking..." : "Your turn!");
+      setMessage(isPlayer ? "AI 正在思考..." : "轮到你了！");
     }
   };
 
   const handleDrawCard = (isPlayer: boolean) => {
     if (gameState.deck.length === 0) {
-      setMessage("Deck is empty! Skipping turn.");
+      setMessage("牌堆已空！跳过回合。");
       setGameState(prev => ({ ...prev, turn: isPlayer ? 'ai' : 'player' }));
       return;
     }
@@ -131,7 +129,7 @@ export default function App() {
       turn: isPlayer ? 'ai' : 'player'
     }));
 
-    setMessage(isPlayer ? "You drew a card. AI's turn." : "AI drew a card. Your turn.");
+    setMessage(isPlayer ? "你摸了一张牌。轮到 AI 了。" : "AI 摸了一张牌。轮到你了。");
   };
 
   // AI Logic
@@ -162,7 +160,7 @@ export default function App() {
       turn: 'ai',
       status: 'playing'
     }));
-    setMessage(`You picked ${suit}. AI's turn.`);
+    setMessage(`你选择了 ${suit}。轮到 AI 了。`);
   };
 
   const topDiscard = gameState.discardPile[gameState.discardPile.length - 1];
@@ -220,7 +218,6 @@ export default function App() {
               className="relative"
             >
               <Card 
-                card={{} as any} 
                 isFaceUp={false} 
                 className={cn(
                   "shadow-2xl transform transition-transform",
@@ -228,7 +225,7 @@ export default function App() {
                 )}
               />
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 whitespace-nowrap">
-                Draw Pile ({gameState.deck.length})
+                摸牌堆 ({gameState.deck.length})
               </div>
             </button>
           </div>
@@ -245,7 +242,7 @@ export default function App() {
               )}
             </AnimatePresence>
             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Current Suit:</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">当前花色:</span>
               <span className={cn("text-sm font-bold", SUIT_COLORS[gameState.currentSuit])}>
                 {SUIT_SYMBOLS[gameState.currentSuit]} {gameState.currentSuit.toUpperCase()}
               </span>
@@ -277,6 +274,55 @@ export default function App() {
 
       {/* Modals */}
       <AnimatePresence>
+        {gameState.status === 'lobby' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4"
+          >
+            <div className="bg-zinc-900 border border-zinc-800 p-8 sm:p-12 rounded-3xl shadow-2xl max-w-2xl w-full">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                  <Layers className="text-white w-7 h-7" />
+                </div>
+                <h2 className="text-3xl font-display font-bold text-white">游戏规则</h2>
+              </div>
+
+              <div className="space-y-6 mb-10 text-zinc-300">
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold">1</div>
+                  <p><span className="text-white font-bold">发牌：</span> 每位玩家初始获得 8 张牌。</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold">2</div>
+                  <p><span className="text-white font-bold">出牌：</span> 你出的牌必须在 <span className="text-indigo-400">花色</span> 或 <span className="text-indigo-400">点数</span> 上与弃牌堆顶部的牌匹配。</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold">3</div>
+                  <p><span className="text-white font-bold">万能 8 点：</span> 数字 “8” 是万用牌。你可以在任何时候打出 8，并指定一个新的花色。</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold">4</div>
+                  <p><span className="text-white font-bold">摸牌：</span> 如果无牌可出，必须从摸牌堆摸一张牌。</p>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0 text-indigo-400 font-bold">5</div>
+                  <p><span className="text-white font-bold">获胜：</span> 最先清空手牌的一方获胜！</p>
+                </div>
+              </div>
+
+              <button
+                onClick={initGame}
+                className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xl rounded-2xl transition-all flex items-center justify-center gap-3 group shadow-xl shadow-indigo-500/20"
+              >
+                开始游戏
+                <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         {gameState.status === 'picking_suit' && (
           <SuitPicker onSelect={handleSuitSelect} />
         )}
@@ -292,19 +338,19 @@ export default function App() {
                 <Trophy className="w-10 h-10 text-yellow-500" />
               </div>
               <h2 className="text-4xl font-display font-bold text-white mb-2">
-                {gameState.winner === 'player' ? 'Victory!' : 'Defeat'}
+                {gameState.winner === 'player' ? '胜利！' : '失败'}
               </h2>
               <p className="text-zinc-400 mb-8">
                 {gameState.winner === 'player' 
-                  ? "You played like a pro! Ready for another round?" 
-                  : "The AI outsmarted you this time. Try again?"}
+                  ? "你玩得太棒了！准备好再来一局了吗？" 
+                  : "AI 这次赢了。再试一次？"}
               </p>
               <button
                 onClick={initGame}
                 className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 group"
               >
                 <RotateCcw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
-                Play Again
+                再来一局
               </button>
             </div>
           </motion.div>
